@@ -1,0 +1,1 @@
+{"description":"Dino Pal — Virtual Pet. A small, original virtual pet game (single self-contained page, no network, no build step).","files":[],"name":"dinopal","private":true,"scripts":{"test":"node --test test/*.test.js"},"type":"module","version":"1.0.0"}

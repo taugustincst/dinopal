@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'sha256-RvfV4/X1gEKGCA+Cg46lKjK3EM94v6d5dHlrb0FDMzM='; style-src 'sha256-swkiqSRWWaHOJcCxLnb5LMm4fzGuolBnfCKiIDNbn1E='; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dino Pal — Virtual Pet</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      body {
+        margin: 0;
+        padding: 1rem;
+        font:
+          1rem/1.5 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        color: #1f2328;
+        background: #fdf8f0;
+      }
+      main {
+        max-width: 28rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 1rem;
+      }
+      h2 {
+        font-size: 1.25rem;
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      h3 {
+        font-size: 1.125rem;
+        margin: 0;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      input {
+        width: 100%;
+        font: inherit;
+        padding: 0.5rem;
+        border: 2px solid #57606a;
+        border-radius: 0.375rem;
+        background: #fff;
+        color: inherit;
+      }
+      button {
+        font: inherit;
+        min-height: 3rem;
+        touch-action: manipulation;
+        padding: 0.5rem 1rem;
+        border: 2px solid #1f2328;
+        border-radius: 0.375rem;
+        background: #fff;
+        color: #1f2328;
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: not-allowed;
+        color: #57606a;
+        border-color: #8c959f;
+        background: #eaeef2;
+      }
+      :focus-visible {
+        outline: 3px solid #0550ae;
+        outline-offset: 2px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+      .alert {
+        color: #a40e26;
+        font-weight: 600;
+        min-height: 1.5rem;
+        margin: 0.5rem 0 0;
+      }
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
+        margin: 0.25rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .art {
+        display: block;
+        width: 100%;
+        max-width: 12rem;
+        height: auto;
+        margin: 0.5rem auto 0;
+      }
+      .caption,
+      .hint {
+        color: #57606a;
+        text-align: center;
+        min-height: 1.5rem;
+        margin: 0;
+      }
+      .hint {
+        text-align: left;
+      }
+      .dino {
+        fill: #8fcf8a;
+        stroke: #2f5130;
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+      .belly {
+        fill: #e8f5d0;
+      }
+      .limb,
+      .jaw {
+        fill: none;
+        stroke: #2f5130;
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+      .shell {
+        fill: #fbf3e4;
+        stroke: #8a6d3b;
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+      .spot {
+        fill: #e3cfa4;
+      }
+      .crack {
+        display: none;
+        fill: none;
+        stroke: #5a4320;
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+      .shards {
+        display: none;
+      }
+      .form-sunback {
+        fill: #f08c3a;
+        stroke: #7a3d10;
+        stroke-width: 3;
+      }
+      .form-spikeback {
+        fill: #4f72d6;
+        stroke: #1f2f6b;
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+      .form-grumblesaur {
+        fill: #8b6a55;
+        stroke: #3d2b20;
+        stroke-width: 3;
+        stroke-linejoin: round;
+      }
+      #pet-figure[data-form="Sunback"] .dino {
+        fill: #f6d27a;
+      }
+      #pet-figure[data-form="Spikeback"] .dino {
+        fill: #a9c6ee;
+      }
+      #pet-figure[data-form="Grumblesaur"] .dino {
+        fill: #b39a7d;
+      }
+      .badge {
+        fill: #fff;
+        stroke: #57606a;
+        stroke-width: 4;
+      }
+      .ink {
+        fill: #1f2328;
+        stroke: #1f2328;
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+      .mouth {
+        fill: none;
+        stroke: #1f2328;
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+      .zzz {
+        fill: #0550ae;
+        font:
+          700 1.5rem system-ui,
+          sans-serif;
+      }
+      #pet-figure,
+      .pose,
+      .jaw {
+        transform-box: fill-box;
+        transform-origin: 50% 100%;
+      }
+      .jaw {
+        transform-origin: 0 50%;
+      }
+      #pet-figure[data-wobble] {
+        transform: rotate(-3deg);
+        animation: wobble 0.5s ease-in-out infinite alternate;
+      }
+      #pet-figure[data-wobble] .crack,
+      #pet-figure[data-event="hatch"] .shards {
+        display: inline;
+      }
+      #pet-figure[data-behaviour="stomp"] {
+        animation: stomp 0.8s ease-in-out infinite;
+      }
+      #pet-figure[data-behaviour="yawn"] {
+        animation: yawn 2.4s ease-in-out infinite;
+      }
+      #pet-figure[data-behaviour="sulk"] {
+        animation: sulk 3s ease-in-out infinite;
+      }
+      #pet-figure[data-behaviour="sniff"] {
+        animation: sniff 1.6s ease-in-out infinite;
+      }
+      #pet-figure[data-event="hatch"] {
+        animation: hatch 0.75s ease-out;
+      }
+      #pet-figure[data-event="evolve"] {
+        animation: evolve 1.5s ease-in-out;
+      }
+      #pet-figure[data-reaction="chomp"] .jaw {
+        transform: rotate(20deg);
+        animation: chomp 0.25s ease-in-out 6 alternate;
+      }
+      #pet-figure[data-reaction="hop"] .pose {
+        transform: translateY(-12px);
+        animation: hop 0.5s ease-in-out 3;
+      }
+      #pet-figure[data-reaction="curl"] .pose {
+        transform: scale(1.08, 0.85);
+        animation: curl 0.6s ease-out;
+      }
+      @keyframes wobble {
+        from {
+          transform: rotate(-6deg);
+        }
+        to {
+          transform: rotate(6deg);
+        }
+      }
+      @keyframes hatch {
+        from {
+          transform: scale(0.85);
+          opacity: 0.4;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      @keyframes evolve {
+        0%,
+        100% {
+          transform: none;
+          opacity: 1;
+        }
+        30% {
+          transform: scale(1.1);
+          opacity: 0.5;
+        }
+        60% {
+          transform: scale(0.96);
+          opacity: 1;
+        }
+      }
+      @keyframes stomp {
+        0%,
+        100% {
+          transform: none;
+        }
+        25% {
+          transform: translateY(-5px) rotate(-2deg);
+        }
+        75% {
+          transform: translateY(-5px) rotate(2deg);
+        }
+      }
+      @keyframes yawn {
+        0%,
+        100% {
+          transform: none;
+        }
+        50% {
+          transform: scale(1.03, 1.06);
+        }
+      }
+      @keyframes sulk {
+        0%,
+        100% {
+          transform: translateY(4px) rotate(-2deg);
+        }
+        50% {
+          transform: translateY(6px) rotate(-4deg);
+        }
+      }
+      @keyframes sniff {
+        0%,
+        100% {
+          transform: none;
+        }
+        50% {
+          transform: translateX(6px) rotate(2deg);
+        }
+      }
+      @keyframes chomp {
+        from {
+          transform: none;
+        }
+        to {
+          transform: rotate(20deg);
+        }
+      }
+      @keyframes hop {
+        0%,
+        100% {
+          transform: none;
+        }
+        50% {
+          transform: translateY(-16px);
+        }
+      }
+      @keyframes curl {
+        from {
+          transform: none;
+        }
+        to {
+          transform: scale(1.08, 0.85);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+      .stats {
+        display: grid;
+        gap: 0.5rem;
+        margin: 0.5rem 0 0;
+      }
+      .stat {
+        display: grid;
+        grid-template-columns: 6rem 1fr 2.5rem;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .track {
+        height: 0.875rem;
+        border: 1px solid #57606a;
+        border-radius: 0.5rem;
+        background: #eaeef2;
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        width: 0;
+        background: #1a7f37;
+      }
+      .value {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .status {
+        min-height: 1.5rem;
+        margin: 0.75rem 0 0;
+      }
+      .game {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        border: 2px solid #57606a;
+        border-radius: 0.375rem;
+        background: #fff;
+      }
+      .game p {
+        margin: 0.25rem 0 0;
+      }
+      .score {
+        font-weight: 600;
+        min-height: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Dino Pal</h1>
+      <p id="storage-note" class="alert" hidden>
+        Progress can't be saved in this browser. The game still works until you
+        close the page.
+      </p>
+
+      <section id="naming-view" aria-labelledby="naming-title" hidden>
+        <h2 id="naming-title">A new egg has appeared</h2>
+        <form id="name-form" novalidate>
+          <label for="pet-name-input">Name your pet</label>
+          <input
+            id="pet-name-input"
+            name="pet-name"
+            type="text"
+            autocomplete="off"
+            aria-describedby="name-error"
+          />
+          <div class="row"><button type="submit">Hatch</button></div>
+          <p id="name-error" class="alert" role="alert"></p>
+        </form>
+      </section>
+
+      <section id="pet-view" aria-labelledby="pet-name" hidden>
+        <h2 id="pet-name"></h2>
+        <ul class="facts">
+          <li>Age: <span id="pet-age"></span></li>
+          <li>Stage: <span id="pet-stage"></span></li>
+          <li id="pet-form-item" hidden>Form: <span id="pet-form"></span></li>
+          <li>Mood: <span id="pet-mood"></span></li>
+          <li id="pet-sleep"></li>
+        </ul>
+        <svg
+          class="art"
+          viewBox="0 0 200 200"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g id="pet-figure">
+            <g class="pose">
+              <g data-stage="Egg">
+                <ellipse class="shell" cx="100" cy="132" rx="44" ry="56" />
+                <circle class="spot" cx="82" cy="104" r="7" />
+                <circle class="spot" cx="122" cy="102" r="4" />
+                <circle class="spot" cx="116" cy="156" r="9" />
+                <path class="crack" d="M58 126 L72 116 L84 130 L98 112 L110 128 L124 114 L142 124" />
+              </g>
+              <g data-stage="Hatchling" transform="translate(40 76) scale(0.6)">
+                <path class="dino" d="M66 140 Q46 148 40 168 Q56 164 72 160 Z" />
+                <path class="dino" d="M76 160 L74 188 L92 188 L94 160 Z" />
+                <path class="dino" d="M108 160 L106 188 L124 188 L126 160 Z" />
+                <ellipse class="dino" cx="98" cy="146" rx="38" ry="28" />
+                <ellipse class="belly" cx="102" cy="154" rx="24" ry="13" />
+                <path class="dino" d="M116 134 Q124 106 138 98 L156 108 Q140 118 136 140 Z" />
+                <ellipse class="dino" cx="152" cy="90" rx="30" ry="22" />
+                <path class="shell" d="M122 84 L128 66 L138 76 L148 60 L158 74 L168 62 L176 80 Q150 70 122 84 Z" />
+                <path class="limb" d="M130 144 L142 152 L138 158" />
+                <circle class="ink" cx="160" cy="88" r="4" />
+                <path class="jaw" d="M150 102 Q164 108 178 98" />
+              </g>
+              <g data-stage="Juvenile" transform="translate(20 38) scale(0.8)">
+                <path class="dino" d="M64 140 Q30 148 16 178 Q42 166 70 162 Z" />
+                <path class="dino" d="M74 160 L72 188 L90 188 L92 160 Z" />
+                <path class="dino" d="M108 160 L106 188 L124 188 L126 160 Z" />
+                <ellipse class="dino" cx="98" cy="146" rx="40" ry="28" />
+                <ellipse class="belly" cx="102" cy="154" rx="26" ry="14" />
+                <path class="dino" d="M118 132 Q126 100 140 92 L156 104 Q140 116 136 140 Z" />
+                <ellipse class="dino" cx="152" cy="88" rx="26" ry="18" />
+                <path class="limb" d="M132 142 L144 150 L140 156" />
+                <circle class="ink" cx="158" cy="83" r="3.5" />
+                <path class="jaw" d="M150 98 Q164 104 176 94" />
+              </g>
+              <g data-stage="Adult" transform="translate(0 0) scale(1)">
+                <g data-form="Sunback">
+                  <path class="form-sunback" d="M62 134 Q64 78 96 70 Q128 78 128 128 Z" />
+                  <path class="limb" d="M78 128 L84 88 M96 124 L96 76 M112 126 L110 88" />
+                </g>
+                <g data-form="Spikeback">
+                  <path
+                    class="form-spikeback"
+                    d="M60 136 L66 112 L76 126 L84 100 L94 122 L104 98 L112 122 L124 104 L128 130 Z"
+                  />
+                </g>
+                <path class="dino" d="M64 140 Q20 150 6 186 Q36 168 70 162 Z" />
+                <path class="dino" d="M72 160 L70 188 L90 188 L92 160 Z" />
+                <path class="dino" d="M108 160 L106 188 L126 188 L128 160 Z" />
+                <ellipse class="dino" cx="98" cy="144" rx="44" ry="30" />
+                <ellipse class="belly" cx="102" cy="154" rx="28" ry="15" />
+                <path class="dino" d="M120 130 Q128 96 142 88 L158 100 Q142 114 138 140 Z" />
+                <ellipse class="dino" cx="154" cy="84" rx="28" ry="19" />
+                <path class="limb" d="M134 142 L148 150 L144 158" />
+                <circle class="ink" cx="160" cy="79" r="3.5" />
+                <path class="jaw" d="M152 95 Q166 101 180 90" />
+                <g data-form="Grumblesaur">
+                  <path class="form-grumblesaur" d="M140 74 L164 66 L174 74 L150 80 Z" />
+                  <path class="form-grumblesaur" d="M128 76 L140 68 L146 76 Z" />
+                  <ellipse class="form-grumblesaur" cx="10" cy="182" rx="13" ry="10" />
+                </g>
+              </g>
+              <g class="shards">
+                <path class="shell" d="M22 188 L26 160 L38 170 L48 156 L58 170 L64 188 Z" />
+                <path class="shell" d="M136 188 L142 166 L152 176 L162 160 L172 174 L178 188 Z" />
+              </g>
+            </g>
+          </g><!-- end pet-figure -->
+          <g transform="translate(-8 -16) scale(0.36)">
+            <circle class="badge" cx="100" cy="122" r="44" />
+            <g data-mood="happy">
+              <circle class="ink" cx="86" cy="110" r="4" />
+              <circle class="ink" cx="114" cy="110" r="4" />
+              <path class="mouth" d="M86 128 Q100 142 114 128" />
+            </g>
+            <g data-mood="neutral">
+              <circle class="ink" cx="86" cy="110" r="4" />
+              <circle class="ink" cx="114" cy="110" r="4" />
+              <path class="mouth" d="M88 134 L112 134" />
+            </g>
+            <g data-mood="sad">
+              <circle class="ink" cx="86" cy="112" r="4" />
+              <circle class="ink" cx="114" cy="112" r="4" />
+              <path class="mouth" d="M86 140 Q100 126 114 140" />
+            </g>
+          </g>
+          <text data-asleep class="zzz" x="150" y="40">z z</text>
+        </svg>
+        <p id="pet-caption" class="caption"></p>
+        <div class="stats">
+          <div class="stat">
+            <span>Hunger</span>
+            <div
+              id="hunger-bar"
+              class="track"
+              role="progressbar"
+              aria-label="Hunger"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Hunger 0 of 100"
+            >
+              <div class="fill"></div>
+            </div>
+            <span id="hunger-value" class="value" aria-hidden="true">0</span>
+          </div>
+          <div class="stat">
+            <span>Happiness</span>
+            <div
+              id="happiness-bar"
+              class="track"
+              role="progressbar"
+              aria-label="Happiness"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Happiness 0 of 100"
+            >
+              <div class="fill"></div>
+            </div>
+            <span id="happiness-value" class="value" aria-hidden="true">0</span>
+          </div>
+          <div class="stat">
+            <span>Energy</span>
+            <div
+              id="energy-bar"
+              class="track"
+              role="progressbar"
+              aria-label="Energy"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Energy 0 of 100"
+            >
+              <div class="fill"></div>
+            </div>
+            <span id="energy-value" class="value" aria-hidden="true">0</span>
+          </div>
+          <div class="stat">
+            <span>Health</span>
+            <div
+              id="health-bar"
+              class="track"
+              role="progressbar"
+              aria-label="Health"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Health 0 of 100"
+            >
+              <div class="fill"></div>
+            </div>
+            <span id="health-value" class="value" aria-hidden="true">0</span>
+          </div>
+        </div>
+        <section id="game-view" aria-labelledby="game-title" hidden>
+          <div class="game">
+            <h3 id="game-title">Which way?</h3>
+            <p id="game-round"></p>
+            <p class="hint">Your pet is hiding behind a bush. Which one?</p>
+            <div class="row">
+              <button id="game-left" type="button">Left</button>
+              <button id="game-right" type="button">Right</button>
+            </div>
+            <p id="game-feedback" role="status"></p>
+            <p id="game-score" class="score"></p>
+            <div class="row">
+              <button id="game-close" type="button">Close</button>
+            </div>
+          </div>
+        </section>
+        <div id="actions" class="row">
+          <button id="feed-button" type="button">Feed</button>
+          <button id="play-button" type="button" aria-describedby="play-reason">Play</button>
+          <button id="sleep-button" type="button">Sleep</button>
+        </div>
+        <p id="play-reason" class="hint"></p>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="death-view" aria-labelledby="death-message" hidden>
+        <h2 id="death-message"></h2>
+        <div class="row">
+          <button id="restart-button" type="button">Start over</button>
+        </div>
+      </section>
+    </main>
+    <script type="module">
+// BEGIN rules.mjs (verbatim copy; checked by test/virtual-pet-page.test.js)
+// Pure game rules for the virtual pet. No DOM, no clock: time comes in as `now`, randomness as `random`.
+// Every function returns a new state object and never mutates its input.
+
+export const TICK_MS = 60_000;
+export const MAX_CATCHUP_TICKS = 1440;
+export const TICKS_PER_AGE = 60;
+export const STAT_MAX = 100;
+export const NAME_MAX = 20;
+// Historic name: version 2 saves keep the version 1 key so old saves are still found.
+export const STORAGE_KEY = 'virtual-pet.v1';
+export const SAVE_VERSION = 2;
+export const STATS = ['hunger', 'happiness', 'energy', 'health'];
+export const HATCH_TICKS = 5;
+export const JUVENILE_TICKS = 120;
+export const ADULT_TICKS = 1440;
+export const STAGES = ['Egg', 'Hatchling', 'Juvenile', 'Adult'];
+export const FORMS = ['Sunback', 'Spikeback', 'Grumblesaur'];
+export const GAME_ROUNDS = 5;
+export const GAME_WIN = 3;
+export const REACTION_MS = 1500;
+export const BEHAVIOUR_MIN_MS = 10_000;
+export const BEHAVIOUR_MAX_MS = 20_000;
+export const MESSAGES = {
+  'name-empty': 'Please give your pet a name.',
+  'name-too-long': `Names can be at most ${NAME_MAX} characters.`,
+  'too-tired': 'Too tired to play. Let it sleep first.',
+  asleep: 'Shh, it is asleep. Wake it first.',
+  dead: 'Your pet has died.',
+  egg: "Eggs can't play yet. Wait for it to hatch.",
+};
+
+const NEEDS = ['hunger', 'happiness', 'energy'];
+const GOOD_CARE = 50;
+const PLAY_ENERGY = 10;
+const CAPTIONS = {
+  stomp: 'is stomping happily',
+  yawn: 'is yawning',
+  sulk: 'is sulking',
+  sniff: 'is sniffing around',
+};
+// Version 1 stage starts (in ticks) mapped to the start of the matching version 2 stage.
+const V1_STAGE_STARTS = [
+  [600, ADULT_TICKS],
+  [180, JUVENILE_TICKS],
+  [60, HATCH_TICKS],
+  [0, 0],
+];
+const clamp = (value) => Math.min(STAT_MAX, Math.max(0, value));
+const isStat = (value) => Number.isInteger(value) && value >= 0 && value <= STAT_MAX;
+const isCount = (value) => Number.isInteger(value) && value >= 0;
+
+export function validateName(raw) {
+  const name = typeof raw === 'string' ? raw.trim() : '';
+  if (name === '') return { ok: false, error: 'name-empty' };
+  if ([...name].length > NAME_MAX) return { ok: false, error: 'name-too-long' };
+  return { ok: true, name };
+}
+
+export function createPet(name, now) {
+  return {
+    version: SAVE_VERSION,
+    name,
+    hunger: 80,
+    happiness: 80,
+    energy: 80,
+    health: 100,
+    age: 0,
+    asleep: false,
+    ticks: 0,
+    lastUpdated: now,
+    dead: false,
+    juvenileTicks: 0,
+    goodTicks: 0,
+    form: null,
+  };
+}
+
+function healthAfter(state) {
+  if (NEEDS.some((stat) => state[stat] === 0)) return clamp(state.health - 10);
+  if (NEEDS.every((stat) => state[stat] >= 50)) return clamp(state.health + 5);
+  return state.health;
+}
+
+function countCare(previous, next) {
+  if (stageOf(previous.ticks) !== 'Juvenile') return next;
+  const good = STATS.every((stat) => next[stat] >= GOOD_CARE);
+  return { ...next, juvenileTicks: next.juvenileTicks + 1, goodTicks: next.goodTicks + (good ? 1 : 0) };
+}
+
+function evolve(state) {
+  if (state.form !== null || stageOf(state.ticks) !== 'Adult') return state;
+  return { ...state, form: formFor(careScore(state)) };
+}
+
+export function tick(state) {
+  if (state.dead) return state;
+  const needs = state.asleep
+    ? { hunger: clamp(state.hunger - 2), happiness: state.happiness, energy: clamp(state.energy + 10) }
+    : { hunger: clamp(state.hunger - 5), happiness: clamp(state.happiness - 3), energy: clamp(state.energy - 2) };
+  const health = healthAfter({ ...state, ...needs });
+  const ticks = state.ticks + 1;
+  const next = { ...state, ...needs, health, ticks, age: Math.floor(ticks / TICKS_PER_AGE), dead: health === 0 };
+  return evolve(countCare(state, next));
+}
+
+function refusal(state) {
+  if (state.dead) return 'dead';
+  if (state.asleep) return 'asleep';
+  return undefined;
+}
+
+export function feed(state) {
+  const error = refusal(state);
+  if (error) return { state, error };
+  return { state: { ...state, hunger: clamp(state.hunger + 25) } };
+}
+
+export function toggleSleep(state) {
+  if (state.dead) return { state, error: 'dead' };
+  return { state: { ...state, asleep: !state.asleep } };
+}
+
+export function playBlockReason(state) {
+  const error = refusal(state);
+  if (error) return error;
+  if (stageOf(state.ticks) === 'Egg') return 'egg';
+  if (state.energy < PLAY_ENERGY) return 'too-tired';
+  return null;
+}
+
+export function hideSpots(random, rounds = GAME_ROUNDS) {
+  return Array.from({ length: rounds }, () => (random() < 0.5 ? 'Left' : 'Right'));
+}
+
+export function startGame(random) {
+  return { spots: hideSpots(random), picks: [], correct: 0 };
+}
+
+export function gameOver(game) {
+  return game.picks.length >= game.spots.length;
+}
+
+export function guess(game, side) {
+  if (gameOver(game)) return game;
+  const found = game.spots[game.picks.length] === side;
+  return { ...game, picks: [...game.picks, side], correct: game.correct + (found ? 1 : 0) };
+}
+
+export function scoreLabel(correct) {
+  return `${correct} of ${GAME_ROUNDS}`;
+}
+
+export function playOutcome(state, correct) {
+  const error = playBlockReason(state);
+  if (error !== null) return { state, error };
+  const joy = correct >= GAME_WIN ? 20 : 5;
+  return { state: { ...state, happiness: clamp(state.happiness + joy), energy: clamp(state.energy - PLAY_ENERGY) } };
+}
+
+export function gameResultMessage(name, correct) {
+  return `${name} was found ${scoreLabel(correct)} times!`;
+}
+
+export function chooseBehaviour(state) {
+  if (state.dead || state.asleep || stageOf(state.ticks) === 'Egg') return null;
+  if (state.energy < 30) return 'yawn';
+  if (state.happiness < 30) return 'sulk';
+  if (state.happiness >= 70) return 'stomp';
+  return 'sniff';
+}
+
+export function behaviourCaption(name, behaviour) {
+  return `${name} ${CAPTIONS[behaviour]}`;
+}
+
+export function nextBehaviourDelay(random) {
+  const spread = BEHAVIOUR_MAX_MS - BEHAVIOUR_MIN_MS + 1;
+  return Math.min(BEHAVIOUR_MAX_MS, BEHAVIOUR_MIN_MS + Math.floor(random() * spread));
+}
+
+export function elapsedTicks(lastUpdated, now) {
+  return Math.min(MAX_CATCHUP_TICKS, Math.max(0, Math.floor((now - lastUpdated) / TICK_MS)));
+}
+
+export function advance(state, now) {
+  const ticksApplied = elapsedTicks(state.lastUpdated, now);
+  let next = state;
+  for (let i = 0; i < ticksApplied; i += 1) next = tick(next);
+  const elapsed = now - state.lastUpdated;
+  const capped = elapsed >= (MAX_CATCHUP_TICKS + 1) * TICK_MS;
+  const lastUpdated = elapsed < 0 || capped ? now : state.lastUpdated + ticksApplied * TICK_MS;
+  return { state: { ...next, lastUpdated }, ticksApplied };
+}
+
+// One tick is one game minute.
+export function stageOf(ticks) {
+  if (ticks >= ADULT_TICKS) return 'Adult';
+  if (ticks >= JUVENILE_TICKS) return 'Juvenile';
+  if (ticks >= HATCH_TICKS) return 'Hatchling';
+  return 'Egg';
+}
+
+export function ageLabel(ticks) {
+  const hours = Math.floor(ticks / 60);
+  if (hours === 0) return `${ticks} min`;
+  if (ticks < ADULT_TICKS) return `${hours} h ${ticks % 60} min`;
+  return `${Math.floor(hours / 24)} d ${hours % 24} h`;
+}
+
+export function isHatching(state) {
+  return stageOf(state.ticks) === 'Egg' && state.ticks >= HATCH_TICKS - 1;
+}
+
+export function careScore(state) {
+  return state.juvenileTicks === 0 ? 0 : state.goodTicks / state.juvenileTicks;
+}
+
+export function formFor(score) {
+  if (score >= 0.7) return 'Sunback';
+  if (score >= 0.4) return 'Spikeback';
+  return 'Grumblesaur';
+}
+
+export function transitionMessages(previous, next, { away = false } = {}) {
+  const messages = [];
+  if (stageOf(previous.ticks) === 'Egg' && stageOf(next.ticks) !== 'Egg') {
+    messages.push(away ? `${next.name} hatched while you were away!` : `${next.name} hatched!`);
+  }
+  if (previous.form === null && next.form !== null) messages.push(`${next.name} evolved into a ${next.form}!`);
+  return messages;
+}
+
+// Sad wins over happy when both conditions hold.
+export function moodOf(state) {
+  if (STATS.some((stat) => state[stat] < 30)) return 'sad';
+  if (state.happiness >= 60 && state.health >= 60) return 'happy';
+  return 'neutral';
+}
+
+export function statLabel(stat, value) {
+  return `${stat[0].toUpperCase()}${stat.slice(1)} ${value} of ${STAT_MAX}`;
+}
+
+export function controlsFor(state) {
+  const busy = state.dead || state.asleep;
+  const playReason = playBlockReason(state);
+  return {
+    feedDisabled: busy,
+    playDisabled: playReason !== null,
+    playReason: playReason === null ? '' : MESSAGES[playReason],
+    sleepDisabled: state.dead,
+    sleepLabel: state.asleep ? 'Wake' : 'Sleep',
+  };
+}
+
+export function serialize(state) {
+  return JSON.stringify(state);
+}
+
+function readJson(raw) {
+  if (typeof raw !== 'string') return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function hasBaseFields(data) {
+  const name = validateName(data.name);
+  return (
+    name.ok &&
+    name.name === data.name &&
+    STATS.every((stat) => isStat(data[stat])) &&
+    isCount(data.age) &&
+    isCount(data.ticks) &&
+    typeof data.asleep === 'boolean' &&
+    typeof data.dead === 'boolean' &&
+    Number.isFinite(data.lastUpdated)
+  );
+}
+
+function hasCareFields(data) {
+  const formAllowed = data.form === null || (FORMS.includes(data.form) && stageOf(data.ticks) === 'Adult');
+  return isCount(data.juvenileTicks) && isCount(data.goodTicks) && data.goodTicks <= data.juvenileTicks && formAllowed;
+}
+
+function baseFields(data, ticks) {
+  return {
+    version: SAVE_VERSION,
+    name: data.name,
+    hunger: data.hunger,
+    happiness: data.happiness,
+    energy: data.energy,
+    health: data.health,
+    age: Math.floor(ticks / TICKS_PER_AGE),
+    asleep: data.asleep,
+    ticks,
+    lastUpdated: data.lastUpdated,
+    dead: data.dead || data.health === 0,
+  };
+}
+
+// Expects a version 1 save that already passed validation. The care score starts from now.
+export function migrateV1(data) {
+  const [, ticks] = V1_STAGE_STARTS.find(([oldStart]) => data.ticks >= oldStart);
+  const form = stageOf(ticks) === 'Adult' ? 'Spikeback' : null;
+  return { ...baseFields(data, ticks), juvenileTicks: 0, goodTicks: 0, form };
+}
+
+export function parseSave(raw) {
+  const data = readJson(raw);
+  if (data === null || typeof data !== 'object' || Array.isArray(data) || !hasBaseFields(data)) return null;
+  if (!('version' in data)) return migrateV1(data);
+  if (data.version !== SAVE_VERSION || !hasCareFields(data)) return null;
+  const pet = { ...baseFields(data, data.ticks), juvenileTicks: data.juvenileTicks, goodTicks: data.goodTicks, form: data.form };
+  return evolve(pet);
+}
+// END rules.mjs
+
+      const byId = (id) => document.getElementById(id);
+      const views = { naming: byId('naming-view'), pet: byId('pet-view'), death: byId('death-view') };
+      const nameInput = byId('pet-name-input');
+      const nameError = byId('name-error');
+      const buttons = { feed: byId('feed-button'), play: byId('play-button'), sleep: byId('sleep-button') };
+      const figure = byId('pet-figure');
+      const caption = byId('pet-caption');
+      const game = {
+        view: byId('game-view'),
+        round: byId('game-round'),
+        feedback: byId('game-feedback'),
+        score: byId('game-score'),
+        left: byId('game-left'),
+        right: byId('game-right'),
+        close: byId('game-close'),
+      };
+      const ART = { stage: '#pet-figure [data-stage]', form: '#pet-figure [data-form]' };
+      const flashTimers = {};
+      let pet = null;
+      let round = null;
+      let nextBehaviourAt = 0;
+
+      function attempt(operation) {
+        try {
+          return operation();
+        } catch (error) {
+          byId('storage-note').hidden = false;
+          console.warn('virtual-pet: localStorage unavailable:', error.name);
+          return null;
+        }
+      }
+
+      const storage = {
+        read: () => attempt(() => localStorage.getItem(STORAGE_KEY)),
+        write: (value) => attempt(() => localStorage.setItem(STORAGE_KEY, value)),
+        clear: () => attempt(() => localStorage.removeItem(STORAGE_KEY)),
+      };
+
+      function show(name) {
+        for (const [key, view] of Object.entries(views)) view.hidden = key !== name;
+      }
+
+      function showOnly(selector, attribute, value) {
+        for (const element of document.querySelectorAll(selector)) {
+          element.toggleAttribute('hidden', element.getAttribute(attribute) !== value);
+        }
+      }
+
+      function announce(message) {
+        byId('status').textContent = message;
+      }
+
+      // Sets a short-lived attribute on the figure. One timer per attribute, replaced on every call.
+      function flashAttribute(attribute, value) {
+        clearTimeout(flashTimers[attribute]);
+        figure.setAttribute(attribute, value);
+        flashTimers[attribute] = setTimeout(() => figure.removeAttribute(attribute), REACTION_MS);
+      }
+
+      const react = (kind) => flashAttribute('data-reaction', kind);
+      const flash = (kind) => flashAttribute('data-event', kind);
+
+      function setBehaviour(behaviour) {
+        if (behaviour === null) {
+          figure.removeAttribute('data-behaviour');
+          caption.textContent = '';
+          return;
+        }
+        figure.setAttribute('data-behaviour', behaviour);
+        caption.textContent = behaviourCaption(pet.name, behaviour);
+      }
+
+      function behave() {
+        if (pet === null || Date.now() < nextBehaviourAt) return;
+        const behaviour = chooseBehaviour(pet);
+        setBehaviour(behaviour);
+        nextBehaviourAt = behaviour === null ? 0 : Date.now() + nextBehaviourDelay(Math.random);
+      }
+
+      function renderStats() {
+        for (const stat of STATS) {
+          const value = pet[stat];
+          const bar = byId(`${stat}-bar`);
+          bar.setAttribute('aria-valuenow', String(value));
+          bar.setAttribute('aria-valuetext', statLabel(stat, value));
+          bar.firstElementChild.style.width = `${value}%`;
+          byId(`${stat}-value`).textContent = String(value);
+        }
+      }
+
+      function renderControls() {
+        const controls = controlsFor(pet);
+        buttons.feed.disabled = controls.feedDisabled;
+        buttons.play.disabled = controls.playDisabled;
+        byId('play-reason').textContent = controls.playReason;
+        buttons.sleep.disabled = controls.sleepDisabled;
+        buttons.sleep.textContent = controls.sleepLabel;
+      }
+
+      function renderFigure(stage) {
+        figure.setAttribute('data-stage', stage);
+        if (pet.form === null) figure.removeAttribute('data-form');
+        else figure.setAttribute('data-form', pet.form);
+        figure.toggleAttribute('data-wobble', isHatching(pet));
+        showOnly(ART.stage, 'data-stage', stage);
+        showOnly(ART.form, 'data-form', pet.form);
+        if (chooseBehaviour(pet) === null) {
+          setBehaviour(null);
+          nextBehaviourAt = 0;
+        }
+      }
+
+      function render() {
+        renderControls();
+        if (pet.dead) {
+          const justDied = views.death.hidden;
+          closeGame();
+          setBehaviour(null);
+          byId('death-message').textContent = `${pet.name} has died at age ${ageLabel(pet.ticks)}.`;
+          show('death');
+          if (justDied) byId('restart-button').focus();
+          return;
+        }
+        const stage = stageOf(pet.ticks);
+        const mood = moodOf(pet);
+        byId('pet-name').textContent = pet.name;
+        byId('pet-age').textContent = ageLabel(pet.ticks);
+        byId('pet-stage').textContent = stage;
+        byId('pet-form').textContent = pet.form ?? '';
+        byId('pet-form-item').hidden = pet.form === null;
+        byId('pet-mood').textContent = mood;
+        byId('pet-sleep').textContent = pet.asleep ? 'Asleep' : 'Awake';
+        renderFigure(stage);
+        showOnly('[data-mood]', 'data-mood', mood);
+        document.querySelector('[data-asleep]').toggleAttribute('hidden', !pet.asleep);
+        renderStats();
+        show('pet');
+      }
+
+      function commit(next) {
+        pet = next;
+        storage.write(serialize(pet));
+        render();
+      }
+
+      function act(action) {
+        const result = action(pet);
+        announce(result.error ? MESSAGES[result.error] : '');
+        commit(result.state);
+        return !result.error;
+      }
+
+      function announceChanges(previous, away) {
+        const messages = transitionMessages(previous, pet, { away });
+        if (messages.length === 0) return;
+        announce(messages.join(' '));
+        flash(pet.form === previous.form ? 'hatch' : 'evolve');
+      }
+
+      function catchUp() {
+        if (pet === null || pet.dead) return;
+        const previous = pet;
+        const result = advance(pet, Date.now());
+        if (result.ticksApplied === 0) {
+          pet = result.state;
+          return;
+        }
+        commit(result.state);
+        announceChanges(previous, false);
+      }
+
+      function onSecond() {
+        catchUp();
+        behave();
+      }
+
+      function renderRound() {
+        game.round.textContent = `Round ${round.picks.length + 1} of ${GAME_ROUNDS}`;
+      }
+
+      function openGame() {
+        round = startGame(Math.random);
+        game.feedback.textContent = '';
+        game.score.textContent = '';
+        game.left.disabled = false;
+        game.right.disabled = false;
+        renderRound();
+        byId('actions').hidden = true;
+        game.view.hidden = false;
+        game.left.focus();
+      }
+
+      function closeGame() {
+        round = null;
+        game.view.hidden = true;
+        byId('actions').hidden = false;
+      }
+
+      function finishGame() {
+        game.score.textContent = scoreLabel(round.correct);
+        const result = playOutcome(pet, round.correct);
+        if (result.error) {
+          announce(MESSAGES[result.error]);
+        } else {
+          commit(result.state);
+          announce(gameResultMessage(pet.name, round.correct));
+          react('hop');
+        }
+        game.left.disabled = true;
+        game.right.disabled = true;
+        game.close.focus();
+      }
+
+      function pick(side) {
+        if (round === null || gameOver(round)) return;
+        const before = round.correct;
+        round = guess(round, side);
+        game.feedback.textContent = round.correct > before ? 'Found it!' : 'Not there.';
+        if (gameOver(round)) finishGame();
+        else renderRound();
+      }
+
+      function startNaming() {
+        pet = null;
+        nameInput.value = '';
+        nameError.textContent = '';
+        nameInput.removeAttribute('aria-invalid');
+        show('naming');
+      }
+
+      byId('name-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const result = validateName(nameInput.value);
+        if (!result.ok) {
+          nameError.textContent = MESSAGES[result.error];
+          nameInput.setAttribute('aria-invalid', 'true');
+          nameInput.focus();
+          return;
+        }
+        announce('');
+        commit(createPet(result.name, Date.now()));
+        buttons.feed.focus();
+      });
+      buttons.feed.addEventListener('click', () => {
+        if (act(feed) && stageOf(pet.ticks) !== 'Egg') react('chomp');
+      });
+      buttons.play.addEventListener('click', openGame);
+      buttons.sleep.addEventListener('click', () => {
+        if (act(toggleSleep) && pet.asleep) react('curl');
+      });
+      game.left.addEventListener('click', () => pick('Left'));
+      game.right.addEventListener('click', () => pick('Right'));
+      game.close.addEventListener('click', () => {
+        closeGame();
+        buttons.play.focus();
+      });
+      byId('restart-button').addEventListener('click', () => {
+        storage.clear();
+        startNaming();
+        nameInput.focus();
+      });
+
+      const raw = storage.read();
+      const saved = parseSave(raw);
+      if (saved === null) {
+        if (raw !== null) storage.clear();
+        startNaming();
+      } else {
+        commit(advance(saved, Date.now()).state);
+        announceChanges(saved, true);
+        behave();
+      }
+      setInterval(onSecond, 1000);
+      document.addEventListener('visibilitychange', onSecond);
+    </script>
+  </body>
+</html>
