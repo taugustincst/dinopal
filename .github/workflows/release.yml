@@ -88,9 +88,10 @@ jobs:
         if: env.ANDROID_UPLOAD_KEYSTORE != ''
         run: |
           cp android/play/build/outputs/bundle/release/play-release.aab "dinopal-${{ steps.ver.outputs.name }}-play.aab"
-          gh release create "play-v${{ steps.ver.outputs.name }}" "dinopal-${{ steps.ver.outputs.name }}-play.aab" \
+          cp android/play/build/outputs/apk/release/play-release.apk "dinopal-${{ steps.ver.outputs.name }}.apk"
+          gh release create "play-v${{ steps.ver.outputs.name }}" "dinopal-${{ steps.ver.outputs.name }}-play.aab" "dinopal-${{ steps.ver.outputs.name }}.apk" \
             --target "$GITHUB_SHA" --title "Dino Pal ${{ steps.ver.outputs.name }} (Play)" \
-            --notes "Google Play bundle, versionCode ${{ steps.ver.outputs.code }}, signed with the upload key from the repository's secrets and checked by tools/check-apk.cjs. Upload the .aab in the Play Console."
+            --notes "Google Play bundle, versionCode ${{ steps.ver.outputs.code }}, signed with the upload key from the repository's secrets and checked by tools/check-apk.cjs. Upload the .aab in the Play Console. The .apk is the same signed build, for sideloading onto a phone."
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Say why nothing was attached
