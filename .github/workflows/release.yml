@@ -83,14 +83,14 @@ jobs:
           node-version: 22
       # The bundle's own APK, checked the way a phone loads it.
       - name: Check the build would load
-        run: node tools/check-apk.js android/play/build/outputs/apk/release/play-release.apk --package com.augustinnovations.dinopal
+        run: node tools/check-apk.cjs android/play/build/outputs/apk/release/play-release.apk --package com.augustinnovations.dinopal
       - name: Publish the release
         if: env.ANDROID_UPLOAD_KEYSTORE != ''
         run: |
           cp android/play/build/outputs/bundle/release/play-release.aab "dinopal-${{ steps.ver.outputs.name }}-play.aab"
           gh release create "play-v${{ steps.ver.outputs.name }}" "dinopal-${{ steps.ver.outputs.name }}-play.aab" \
             --target "$GITHUB_SHA" --title "Dino Pal ${{ steps.ver.outputs.name }} (Play)" \
-            --notes "Google Play bundle, versionCode ${{ steps.ver.outputs.code }}, signed with the upload key from the repository's secrets and checked by tools/check-apk.js. Upload the .aab in the Play Console."
+            --notes "Google Play bundle, versionCode ${{ steps.ver.outputs.code }}, signed with the upload key from the repository's secrets and checked by tools/check-apk.cjs. Upload the .aab in the Play Console."
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Say why nothing was attached

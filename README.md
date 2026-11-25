@@ -17,6 +17,6 @@ no network, no accounts, no ads.
   the app's own assets. Package: `com.augustinnovations.dinopal`.
 - **Release:** run the "Release (Play bundle)" workflow from the Actions tab
   with a version number; it builds the bundle, checks the APK with
-  `tools/check-apk.js`, and attaches the signed `.aab` to a GitHub Release
+  `tools/check-apk.cjs`, and attaches the signed `.aab` to a GitHub Release
   tagged `play-v<version>` (signed when the repo's `ANDROID_UPLOAD_*` secrets
   are set).

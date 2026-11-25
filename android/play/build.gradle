@@ -10,7 +10,7 @@ plugins {
 // permission at all: the game is fully offline and makes no network requests.
 //
 // The same shape as Pocket Decks' Play edition, minus billing: Dino Pal has
-// nothing to sell. tools/check-apk.js checks every APK built here.
+// nothing to sell. tools/check-apk.cjs checks every APK built here.
 
 // Release signing: the upload key from android/keystore.properties when it
 // exists (never committed; the Release workflow writes it from the repo's
